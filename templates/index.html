@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Recommendation System - Machine Learning Discovery</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body class="cinematic-theme">
+  <!-- Navigation Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand-logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+          <line x1="7" y1="2" x2="7" y2="22"></line>
+          <line x1="17" y1="2" x2="17" y2="22"></line>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <line x1="2" y1="7" x2="7" y2="7"></line>
+          <line x1="2" y1="17" x2="7" y2="17"></line>
+          <line x1="17" y1="17" x2="22" y2="17"></line>
+          <line x1="17" y1="7" x2="22" y2="7"></line>
+        </svg>
+        <span class="brand-text">CINE<span class="accent-text">MATCH</span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#search-section" class="nav-item active">Search</a>
+        <a href="#featured-section" class="nav-item">Discover</a>
+        <a href="#about-section" class="nav-item">ML Algorithm</a>
+      </nav>
+      <div class="engine-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">TF-IDF & Cosine Similarity</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero & Search Section -->
+  <main class="main-content">
+    <section id="search-section" class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">Movie Recommendation System</h1>
+        <p class="hero-subtitle">
+          Content-based recommendation engine powered by TF-IDF vectorization and cosine similarity. Select any movie to discover top similar titles across genres, plot overviews, keywords, cast, and directors.
+        </p>
+
+        <!-- Search Bar Component -->
+        <div class="search-container">
+          <form id="search-form" class="search-form" onsubmit="event.preventDefault(); handleSearchSubmit();">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                id="movie-input"
+                class="movie-input"
+                placeholder="Search for a movie title (e.g. Inception, Avatar, Interstellar)..."
+                autocomplete="off"
+              />
+              <button type="button" id="clear-search-btn" class="clear-btn hidden" onclick="clearSearchInput()">&times;</button>
+            </div>
+            <button type="submit" id="search-btn" class="btn-primary">
+              <span>Find Similar</span>
+            </button>
+          </form>
+
+          <!-- Autocomplete Dropdown List -->
+          <div id="autocomplete-list" class="autocomplete-dropdown hidden"></div>
+        </div>
+
+        <!-- Quick filter chips / popular tags -->
+        <div class="quick-tags">
+          <span class="quick-tags-label">Try picking:</span>
+          <button class="tag-chip" onclick="selectMovieByTitle('Inception')">Inception</button>
+          <button class="tag-chip" onclick="selectMovieByTitle('The Dark Knight')">The Dark Knight</button>
+          <button class="tag-chip" onclick="selectMovieByTitle('Interstellar')">Interstellar</button>
+          <button class="tag-chip" onclick="selectMovieByTitle('The Godfather')">The Godfather</button>
+          <button class="tag-chip" onclick="selectMovieByTitle('Avatar')">Avatar</button>
+          <button class="tag-chip" onclick="selectMovieByTitle('Pulp Fiction')">Pulp Fiction</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status & Alerts Container -->
+    <div id="status-container" class="status-container hidden">
+      <div id="status-message" class="status-box"></div>
+    </div>
+
+    <!-- Active Selected Movie Hero Section -->
+    <section id="selected-movie-section" class="selected-movie-section hidden">
+      <div class="section-header">
+        <h2 class="section-title">Selected Movie</h2>
+        <span class="section-tag">Base for similarity calculation</span>
+      </div>
+      <div id="selected-movie-card" class="selected-movie-card">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Recommended Movies Section -->
+    <section id="recommendations-section" class="recommendations-section hidden">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">Recommended For You</h2>
+          <p class="section-desc">Calculated by cosine similarity on extracted text features</p>
+        </div>
+        <div class="rec-controls">
+          <label for="rec-limit-select" class="control-label">Show:</label>
+          <select id="rec-limit-select" class="custom-select" onchange="handleLimitChange()">
+            <option value="6">6 movies</option>
+            <option value="8" selected>8 movies</option>
+            <option value="12">12 movies</option>
+          </select>
+        </div>
+      </div>
+      <div id="recommendations-grid" class="movies-grid">
+        <!-- Recommended movie cards rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Discover / Popular Movies Section -->
+    <section id="featured-section" class="featured-section">
+      <div class="section-header">
+        <h2 class="section-title">Popular / Example Movies</h2>
+        <p class="section-desc">Click any title to compute real-time content-based recommendations</p>
+      </div>
+      <div id="featured-grid" class="movies-grid">
+        <div class="grid-loading">Loading movies catalog...</div>
+      </div>
+    </section>
+
+    <!-- Technical Info / Algorithm Explanation -->
+    <section id="about-section" class="about-section">
+      <div class="about-card">
+        <h2 class="about-title">How the Content-Based Filtering Works</h2>
+        <div class="about-grid">
+          <div class="about-col">
+            <div class="step-num">01</div>
+            <h3>Feature Engineering</h3>
+            <p>
+              Metadata from the real TMDB dataset (genres, plot overview, keywords, cast, and director) are concatenated into a consolidated descriptive document for each film.
+            </p>
+          </div>
+          <div class="about-col">
+            <div class="step-num">02</div>
+            <h3>TF-IDF Vectorization</h3>
+            <p>
+              Scikit-learn's <code>TfidfVectorizer</code> converts text descriptions into high-dimensional numerical vectors, penalizing ubiquitous stop words and weighting salient terminology.
+            </p>
+          </div>
+          <div class="about-col">
+            <div class="step-num">03</div>
+            <h3>Cosine Similarity</h3>
+            <p>
+              The cosine angle between the target film's vector and every other film vector is computed:
+              $$\cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|}$$
+              Films with the highest cosine scores are returned in descending order.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p>Movie Recommendation System &bull; Genuine Machine Learning Implementation with Scikit-Learn & Flask</p>
+      <p class="footer-sub">Real dataset containing 4,760+ TMDB movies with genre, plot, cast, and director analysis.</p>
+    </div>
+  </footer>
+
+  <script src="/static/js/script.js"></script>
+</body>
+</html>

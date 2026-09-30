@@ -1,0 +1,6 @@
+{
+  "name": "Movie Recommendation System",
+  "description": "A machine-learning content-based movie recommendation system using TF-IDF Vectorization and Cosine Similarity to find similar movies based on genres, keywords, cast, and overview.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
