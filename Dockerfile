@@ -1,38 +1,64 @@
 FROM node:22-bookworm
 
-WORKDIR /app
-
-# Install Python and tools needed by the ML service
+# Install Python
 RUN apt-get update && \
-    apt-get install -y python3 python3-venv python3-pip && \
+    apt-get install -y python3 python3-pip python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
-# Create Python virtual environment
-RUN python3 -m venv /opt/venv
+WORKDIR /app
 
-ENV PATH="/opt/venv/bin:$PATH"
+# ------------------------------------------------------------
+# Node dependencies
+# ------------------------------------------------------------
 
-# Copy package files first
 COPY package*.json ./
 
-# Install Node dependencies
 RUN npm install
 
-# Copy Python requirements
+# ------------------------------------------------------------
+# Python dependencies
+# ------------------------------------------------------------
+
 COPY requirements.txt ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install \
+    --break-system-packages \
+    --no-cache-dir \
+    -r requirements.txt
 
-# Copy the rest of the project
+# ------------------------------------------------------------
+# Application source
+# ------------------------------------------------------------
+
 COPY . .
 
-# Build React/Vite frontend
+# ------------------------------------------------------------
+# Build React application
+# ------------------------------------------------------------
+
 RUN npm run build
 
-# Render supplies PORT automatically
+# ------------------------------------------------------------
+# Environment
+# ------------------------------------------------------------
+
 ENV NODE_ENV=production
 
-EXPOSE 10000
+ENV PORT=8080
+
+ENV FLASK_PORT=5000
+
+ENV PYTHON_COMMAND=python3
+
+# ------------------------------------------------------------
+# Cloud/container port
+# ------------------------------------------------------------
+
+EXPOSE 8080
+
+# ------------------------------------------------------------
+# Start Node server
+# Node server starts Flask automatically
+# ------------------------------------------------------------
 
 CMD ["npm", "start"]
